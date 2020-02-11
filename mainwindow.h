@@ -2,6 +2,9 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMessageBox>
+#include <vector>
+#include "user.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,7 +28,12 @@ private slots:
     void enableLoginPB();
     void enableCreatePB();
 
+    void on_createPB_clicked();
+
+    void on_loginPB_clicked();
+
 private:
     Ui::MainWindow *ui;
+    std::vector<User> m_users;
 };
 #endif // MAINWINDOW_H
