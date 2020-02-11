@@ -3,8 +3,12 @@
 
 #include <QMainWindow>
 #include <QMessageBox>
+#include <QDebug>
 #include <vector>
+#include <regex>
 #include "user.h"
+
+using namespace std;
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -34,6 +38,6 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    std::vector<User> m_users;
+    vector<User> m_users;
 };
 #endif // MAINWINDOW_H
