@@ -59,34 +59,59 @@ void MainWindow::on_newPasswordLE_textChanged(const QString &arg1)
 
 void MainWindow::enableCreatePB()
 {
-    regex regEmail("[a-zA-z0-9-_.]+@nile.com");
-    regex regUser("[A-Za-z0-9-_.]*");
     ui->createPB->setEnabled(false);
     if (ui->newPasswordLE->text().length() && ui->newEmailLE->text().length()
         && ui->newUsernameLE->text().length())
-        if (regex_match(ui->newEmailLE->text().toStdString(), regEmail)
-            && regex_match(ui->newUsernameLE->text().toStdString(), regUser))
-        {
-            ui->createPB->setEnabled(true);
-            for (unsigned int i = 0; i < m_users.size(); i++)
-                if (ui->newEmailLE->text() == m_users.at(i).getEmail()
-                   || ui->newUsernameLE->text() == m_users.at(i).getUsername())
-                {
-                    ui->createPB->setEnabled(false);
-                    break;
-                }
-        }
+        ui->createPB->setEnabled(true);
 }
 
 void MainWindow::on_createPB_clicked()
 {
+    bool create = false;
+    unsigned int i;
+    regex regEmail("[a-zA-Z0-9-_.]+@[a-zA-Z0-9]+.+[a-zA-Z]");
+    regex regUser("[A-Za-z0-9-_.]*");
     User userTmp;
     userTmp.setEmail(ui->newEmailLE->text());
     userTmp.setPassword(ui->newPasswordLE->text());
     userTmp.setUsername(ui->newUsernameLE->text());
-    m_users.push_back(userTmp);
 
-    QMessageBox::about(this, "User created", "User created succesfully");
+    if (regex_match(userTmp.getEmail().toStdString(), regEmail))
+    {
+        if (regex_match(userTmp.getUsername().toStdString(), regUser))
+        {
+            for (i = 0; i < m_users.size(); i++)
+            {
+                if (userTmp.getEmail() == m_users.at(i).getEmail())
+                    QMessageBox::warning(this, "invalid email",
+                                         "email is already in use");
+                else if (userTmp.getUsername() == m_users.at(i).getUsername())
+                    QMessageBox::warning(this, "invalid username",
+                                         "username is already in use");
+                else
+                {
+                    create = true;
+                    QMessageBox::about(this, "User created", "User created succesfully");
+                }
+            }
+            if (!i)
+                create = true;
+        }
+        else
+            QMessageBox::warning(this, "invalid username",
+                                 "username needs an alphanumeric format,"
+                                 "perdiods, dash and/or underscore");
+    }
+    else
+        QMessageBox::warning(this, "invalid email",
+                             "email needs an alphanumeric format, period, dash and/or underscore "
+                             "followed by \"@<domain>.<extension>\"");
+    if (create)
+    {
+        m_users.push_back(userTmp);
+        QMessageBox::about(this, "User created", "User created succesfully");
+    }
+
     ui->newEmailLE->clear();
     ui->newPasswordLE->clear();
     ui->newUsernameLE->clear();

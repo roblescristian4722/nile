@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
-    <height>419</height>
+    <width>450</width>
+    <height>500</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -77,6 +77,20 @@
         </item>
         <item row="0" column="0">
          <widget class="QLabel" name="titleL">
+          <property name="font">
+           <font>
+            <pointsize>18</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+            <stylestrategy>PreferDefault</stylestrategy>
+           </font>
+          </property>
+          <property name="autoFillBackground">
+           <bool>false</bool>
+          </property>
+          <property name="styleSheet">
+           <string notr="true">color: #268ea6;</string>
+          </property>
           <property name="text">
            <string>Nile</string>
           </property>
@@ -161,8 +175,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>300</width>
-     <height>22</height>
+     <width>450</width>
+     <height>20</height>
     </rect>
    </property>
   </widget>
