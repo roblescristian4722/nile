@@ -4,6 +4,13 @@
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
+#include <QMenu>
+#include <QAction>
+#include <QFile>
+#include <QFileDialog>
+#include <QJsonDocument>
+#include <QJsonObject>
+#include <QJsonArray>
 #include <vector>
 #include <regex>
 #include "user.h"
@@ -28,6 +35,7 @@ private slots:
     void on_newUsernameLE_textChanged(const QString &arg1);
     void on_newEmailLE_textChanged(const QString &arg1);
     void on_newPasswordLE_textChanged(const QString &arg1);
+    void openFile();
 
     void enableLoginPB();
     void enableCreatePB();
@@ -36,8 +44,15 @@ private slots:
 
     void on_loginPB_clicked();
 
+    void saveDB();
+
 private:
     Ui::MainWindow *ui;
     vector<User> m_users;
+
+    QAction* m_openFileAction;
+    QMenu* m_fileMenu;
+    QFile m_dbFile;
+    QJsonArray m_database;
 };
 #endif // MAINWINDOW_H

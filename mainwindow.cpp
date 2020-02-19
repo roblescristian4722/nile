@@ -6,10 +6,18 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->setWindowTitle("Nile");
+    m_fileMenu = ui->menubar->addMenu(tr("&File"));
+    m_openFileAction = new QAction(tr("Open File"), this);
+    // Conectar evento y comportamiento
+    // connect(Quién envía, Qué envía, Quién responde, Con qué responde)
+    connect(m_openFileAction, SIGNAL(triggered()), this, SLOT(openFile()));
+    m_fileMenu->addAction(m_openFileAction);
 }
 
 MainWindow::~MainWindow()
 {
+    saveDB();
     delete ui;
 }
 
@@ -57,6 +65,22 @@ void MainWindow::on_newPasswordLE_textChanged(const QString &arg1)
     enableCreatePB();
 }
 
+void MainWindow::openFile()
+{
+    QString fileName;
+
+    fileName = QFileDialog::getOpenFileName(this, "Nile Database",
+                                            "", "JSON files (*.json)");
+    if (fileName.length() > 0)
+    {
+        m_dbFile.setFileName(fileName);
+        // Cargar la base de datos
+        ui->loginFrame->setEnabled(true);
+        ui->groupBox->setEnabled(true);
+        ui->loginGB->setEnabled(true);
+    }
+}
+
 void MainWindow::enableCreatePB()
 {
     ui->createPB->setEnabled(false);
@@ -67,6 +91,7 @@ void MainWindow::enableCreatePB()
 
 void MainWindow::on_createPB_clicked()
 {
+    QJsonObject jsonObj;
     bool create = false;
     unsigned int i;
     regex regEmail("[a-zA-Z0-9-_.]+@[a-zA-Z0-9]+.+[a-zA-Z]");
@@ -109,6 +134,10 @@ void MainWindow::on_createPB_clicked()
     if (create)
     {
         m_users.push_back(userTmp);
+        jsonObj["name"] = userTmp.getUsername();
+        jsonObj["email"] = userTmp.getEmail();
+        jsonObj["password"] = userTmp.getPassword();
+        m_database.append(jsonObj);
         QMessageBox::about(this, "User created", "User created succesfully");
     }
 
@@ -140,4 +169,17 @@ void MainWindow::on_loginPB_clicked()
         QMessageBox::warning(this, "Invalid user/password", "Invalid user/password");
     ui->usernameLE->clear();
     ui->passwordLE->clear();
+}
+
+void MainWindow::saveDB()
+{
+    QJsonDocument jsonDoc;
+    QJsonObject jsonObj;
+
+    jsonObj["users"] = m_database;
+    jsonDoc = QJsonDocument(jsonObj);
+
+    m_dbFile.open(QIODevice::WriteOnly);
+    m_dbFile.write(jsonDoc.toJson());
+    m_dbFile.close();
 }
