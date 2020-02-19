@@ -56,14 +56,14 @@
              </property>
              <layout class="QFormLayout" name="formLayout">
               <item row="0" column="0">
-               <widget class="QLabel" name="usernameL">
+               <widget class="QLabel" name="emailL">
                 <property name="text">
-                 <string>username</string>
+                 <string>email</string>
                 </property>
                </widget>
               </item>
               <item row="0" column="1">
-               <widget class="QLineEdit" name="usernameLE"/>
+               <widget class="QLineEdit" name="emailLE"/>
               </item>
               <item row="1" column="0">
                <widget class="QLabel" name="passwordL">
@@ -195,13 +195,13 @@
      <x>0</x>
      <y>0</y>
      <width>585</width>
-     <height>22</height>
+     <height>20</height>
     </rect>
    </property>
   </widget>
  </widget>
  <tabstops>
-  <tabstop>usernameLE</tabstop>
+  <tabstop>emailLE</tabstop>
   <tabstop>passwordLE</tabstop>
   <tabstop>loginPB</tabstop>
   <tabstop>newUsernameLE</tabstop>

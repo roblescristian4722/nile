@@ -23,25 +23,15 @@ MainWindow::~MainWindow()
 
 void MainWindow::enableLoginPB()
 {
-    regex regEmail("[A-Za-z0-9-_.]*");
-    if (ui->usernameLE->text().length() && ui->passwordLE->text().length())
+    if (ui->emailLE->text().length() && ui->passwordLE->text().length())
     {
-        if (regex_match(ui->usernameLE->text().toStdString(), regEmail))
-            ui->loginPB->setEnabled(true);
-        else
-            ui->loginPB->setEnabled(false);
+        ui->loginPB->setEnabled(true);
     }
     else
         ui->loginPB->setEnabled(false);
 }
 
 void MainWindow::on_passwordLE_textChanged(const QString &arg1)
-{
-    Q_UNUSED(arg1)
-    enableLoginPB();
-}
-
-void MainWindow::on_usernameLE_textChanged(const QString &arg1)
 {
     Q_UNUSED(arg1)
     enableLoginPB();
@@ -74,7 +64,7 @@ void MainWindow::openFile()
     if (fileName.length() > 0)
     {
         m_dbFile.setFileName(fileName);
-        // Cargar la base de datos
+        loadDB();
         ui->loginFrame->setEnabled(true);
         ui->groupBox->setEnabled(true);
         ui->loginGB->setEnabled(true);
@@ -151,7 +141,7 @@ void MainWindow::on_loginPB_clicked()
     unsigned int i;
     for (i = 0; i < m_users.size(); i++)
     {
-        if (m_users.at(i).getUsername() == ui->usernameLE->text())
+        if (m_users.at(i).getEmail() == ui->emailLE->text())
         {
             if (m_users.at(i).getPassword() == ui->passwordLE->text())
             {
@@ -167,7 +157,7 @@ void MainWindow::on_loginPB_clicked()
     }
     if (i == m_users.size())
         QMessageBox::warning(this, "Invalid user/password", "Invalid user/password");
-    ui->usernameLE->clear();
+    ui->emailLE->clear();
     ui->passwordLE->clear();
 }
 
@@ -182,4 +172,37 @@ void MainWindow::saveDB()
     m_dbFile.open(QIODevice::WriteOnly);
     m_dbFile.write(jsonDoc.toJson());
     m_dbFile.close();
+}
+
+void MainWindow::loadDB()
+{
+    QJsonDocument jsonDoc;
+    QJsonObject jsonObj;
+    QByteArray data;
+
+    QJsonObject jsonAux;
+    User userAux;
+
+    m_dbFile.open(QIODevice::ReadOnly);
+    data = m_dbFile.readAll();
+    jsonDoc = QJsonDocument::fromJson(data);
+    jsonObj = jsonDoc.object();
+    m_database = jsonObj["users"].toArray();
+
+    for (int i = 0; i < m_database.size(); i++)
+    {
+        jsonAux = m_database[i].toObject();
+        userAux.setEmail(jsonAux["email"].toString());
+        userAux.setUsername(jsonAux["name"].toString());
+        userAux.setPassword(jsonAux["password"].toString());
+        m_users.push_back(userAux);
+    }
+
+    m_dbFile.close();
+}
+
+void MainWindow::on_emailLE_textChanged(const QString &arg1)
+{
+    Q_UNUSED(arg1)
+    enableLoginPB();
 }

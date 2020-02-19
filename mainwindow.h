@@ -31,7 +31,6 @@ public:
 
 private slots:
     void on_passwordLE_textChanged(const QString &arg1);
-    void on_usernameLE_textChanged(const QString &arg1);
     void on_newUsernameLE_textChanged(const QString &arg1);
     void on_newEmailLE_textChanged(const QString &arg1);
     void on_newPasswordLE_textChanged(const QString &arg1);
@@ -45,6 +44,9 @@ private slots:
     void on_loginPB_clicked();
 
     void saveDB();
+    void loadDB();
+
+    void on_emailLE_textChanged(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
