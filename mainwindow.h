@@ -1,6 +1,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#define MAX_ROWS 3
+
+#include <iostream>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
@@ -11,9 +14,11 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonArray>
+#include <QGridLayout>
 #include <vector>
 #include <regex>
 #include "user.h"
+#include "producto.h"
 
 using namespace std;
 
@@ -48,6 +53,9 @@ private slots:
 
     void on_emailLE_textChanged(const QString &arg1);
 
+    void showProducts();
+    void addToGrid(QGridLayout* layout, Producto* producto);
+
 private:
     Ui::MainWindow *ui;
     vector<User> m_users;
@@ -56,5 +64,7 @@ private:
     QMenu* m_fileMenu;
     QFile m_dbFile;
     QJsonArray m_database;
+    QJsonArray m_productDb;
+    vector<Producto*> m_products;
 };
 #endif // MAINWINDOW_H

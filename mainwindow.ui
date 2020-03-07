@@ -183,7 +183,66 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="page_2"/>
+      <widget class="QWidget" name="page_2">
+       <layout class="QGridLayout" name="gridLayout_4">
+        <item row="1" column="0">
+         <widget class="QScrollArea" name="productosSA">
+          <property name="widgetResizable">
+           <bool>true</bool>
+          </property>
+          <widget class="QWidget" name="scrollAreaWidgetContents">
+           <property name="geometry">
+            <rect>
+             <x>0</x>
+             <y>0</y>
+             <width>547</width>
+             <height>431</height>
+            </rect>
+           </property>
+           <layout class="QGridLayout" name="gridLayout_5">
+            <item row="0" column="0">
+             <widget class="QWidget" name="tmpW" native="true"/>
+            </item>
+           </layout>
+          </widget>
+         </widget>
+        </item>
+        <item row="0" column="0">
+         <widget class="QComboBox" name="comboBox">
+          <item>
+           <property name="text">
+            <string>Todos los departamentos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Alimentos y Bebidas</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Libros</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Electrónicos</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Hogar Y Cocina</string>
+           </property>
+          </item>
+          <item>
+           <property name="text">
+            <string>Deporte y Aire Libre</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -195,7 +254,7 @@
      <x>0</x>
      <y>0</y>
      <width>585</width>
-     <height>20</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>

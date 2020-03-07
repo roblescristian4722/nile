@@ -7,6 +7,10 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->setWindowTitle("Nile");
+    this->setMinimumSize(600, 600);
+    ui->productosSA->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+    ui->productosSA->setWidgetResizable(true);
+
     m_fileMenu = ui->menubar->addMenu(tr("&File"));
     m_openFileAction = new QAction(tr("Open File"), this);
     // Conectar evento y comportamiento
@@ -17,7 +21,10 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    saveDB();
+    //saveDB();
+    for (int i = 0; i < m_products.size(); ++i)
+        delete m_products[i];
+    m_products.clear();
     delete ui;
 }
 
@@ -109,7 +116,7 @@ void MainWindow::on_createPB_clicked()
                     QMessageBox::about(this, "User created", "User created succesfully");
                 }
             }
-            if (!i)
+            if (m_users.empty())
                 create = true;
         }
         else
@@ -138,6 +145,7 @@ void MainWindow::on_createPB_clicked()
 
 void MainWindow::on_loginPB_clicked()
 {
+    bool success = false;
     unsigned int i;
     for (i = 0; i < m_users.size(); i++)
     {
@@ -147,11 +155,11 @@ void MainWindow::on_loginPB_clicked()
             {
                 ui->viewSW->setCurrentIndex(1);
                 QMessageBox::about(this, "Welcome", "Welcome to Nile!!");
+
+                success = true;
             }
             else
-            {
                 QMessageBox::warning(this, "Invalid user/password", "Invalid user/password");
-            }
             break;
         }
     }
@@ -159,6 +167,9 @@ void MainWindow::on_loginPB_clicked()
         QMessageBox::warning(this, "Invalid user/password", "Invalid user/password");
     ui->emailLE->clear();
     ui->passwordLE->clear();
+
+    if (success)
+        showProducts();
 }
 
 void MainWindow::saveDB()
@@ -188,6 +199,7 @@ void MainWindow::loadDB()
     jsonDoc = QJsonDocument::fromJson(data);
     jsonObj = jsonDoc.object();
     m_database = jsonObj["users"].toArray();
+    m_productDb = jsonObj["products"].toArray();
 
     for (int i = 0; i < m_database.size(); i++)
     {
@@ -205,4 +217,43 @@ void MainWindow::on_emailLE_textChanged(const QString &arg1)
 {
     Q_UNUSED(arg1)
     enableLoginPB();
+}
+
+void MainWindow::showProducts()
+{
+    QJsonObject auxJson;
+    Producto* tmp;
+    QGridLayout *layout = new QGridLayout;
+    QString img;
+
+    for (int i = 0; i < m_productDb.size(); ++i)
+    {
+        tmp = new Producto;
+        // Se obtiene el primer objeto de la tabla "products"
+        // de la base de datos JSON
+        auxJson = m_productDb[i].toObject();
+
+        // Se obtiene el nombre de dicho objeto y se c
+        tmp->setMinimumSize(100, 100);
+        tmp->setMaximumWidth(500);
+        tmp->changeName(auxJson["name"].toString());
+        tmp->changePrice(auxJson["price"].toString());
+        img = auxJson["id"].toString();
+        img += ".jpg";
+        tmp->changeImage(img);
+        addToGrid(layout, tmp);
+        m_products.push_back(tmp);
+    }
+    ui->tmpW->setLayout(layout);
+}
+
+void MainWindow::addToGrid(QGridLayout *layout, Producto* producto)
+{
+    static int column = 0;
+    static int row = 0;
+    layout->addWidget(producto, row, column);
+    if (column == MAX_ROWS - 1)
+        ++row;
+    ++column;
+    column %= MAX_ROWS;
 }
