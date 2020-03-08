@@ -201,7 +201,14 @@
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
             <item row="0" column="0">
-             <widget class="QWidget" name="tmpW" native="true"/>
+             <widget class="QWidget" name="tmpW" native="true">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>

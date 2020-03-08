@@ -7,10 +7,13 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->setWindowTitle("Nile");
-    this->setMinimumSize(600, 600);
+    this->setMinimumSize(700, 600);
     ui->productosSA->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->productosSA->setWidgetResizable(true);
 
+    m_layoutRow = 0;
+    m_layoutColumn = 0;
+    m_layout = new QGridLayout;
     m_fileMenu = ui->menubar->addMenu(tr("&File"));
     m_openFileAction = new QAction(tr("Open File"), this);
     // Conectar evento y comportamiento
@@ -169,7 +172,7 @@ void MainWindow::on_loginPB_clicked()
     ui->passwordLE->clear();
 
     if (success)
-        showProducts();
+        showProducts("*");
 }
 
 void MainWindow::saveDB()
@@ -219,41 +222,81 @@ void MainWindow::on_emailLE_textChanged(const QString &arg1)
     enableLoginPB();
 }
 
-void MainWindow::showProducts()
+void MainWindow::showProducts(QString category)
 {
     QJsonObject auxJson;
     Producto* tmp;
-    QGridLayout *layout = new QGridLayout;
     QString img;
+    QString floatTmp;
+    QString idCmp;
 
     for (int i = 0; i < m_productDb.size(); ++i)
     {
+        idCmp = "";
         tmp = new Producto;
         // Se obtiene el primer objeto de la tabla "products"
         // de la base de datos JSON
         auxJson = m_productDb[i].toObject();
 
         // Se obtiene el nombre de dicho objeto y se c
-        tmp->setMinimumSize(100, 100);
-        tmp->setMaximumWidth(500);
-        tmp->changeName(auxJson["name"].toString());
-        tmp->changePrice(auxJson["price"].toString());
+        tmp->setMaximumHeight(300);
+        tmp->setMaximumWidth(200);
+
         img = auxJson["id"].toString();
-        img += ".jpg";
-        tmp->changeImage(img);
-        addToGrid(layout, tmp);
-        m_products.push_back(tmp);
+        for (int j = 0; j < img.size(); ++j)
+            if (img[j] < '0' || img[j] > '9')
+                idCmp += img[j];
+        qDebug() << idCmp << endl;
+        if (category == "*" || idCmp == category)
+        {
+            tmp->changeName(auxJson["name"].toString());
+
+            floatTmp = QString::number(auxJson["price"].toDouble());
+            tmp->changePrice(floatTmp);
+
+            img += ".jpg";
+            tmp->changeImage(img);
+
+            addToGrid(tmp);
+            m_products.push_back(tmp);
+        }
     }
-    ui->tmpW->setLayout(layout);
+    ui->tmpW->setLayout(m_layout);
 }
 
-void MainWindow::addToGrid(QGridLayout *layout, Producto* producto)
+void MainWindow::addToGrid(Producto* producto)
 {
-    static int column = 0;
-    static int row = 0;
-    layout->addWidget(producto, row, column);
-    if (column == MAX_ROWS - 1)
-        ++row;
-    ++column;
-    column %= MAX_ROWS;
+    m_layout->addWidget(producto, m_layoutRow, m_layoutColumn);
+    if (m_layoutColumn == MAX_ROWS - 1)
+        ++m_layoutRow;
+    ++m_layoutColumn;
+    m_layoutColumn %= MAX_ROWS;
+}
+
+void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
+{
+    // Se eliminan los datos anteriores
+    for (int i = 0; i < m_products.size(); ++i)
+        m_layout->removeWidget(m_products[i]);
+    for (int i = 0; i < m_products.size(); ++i)
+        delete m_products[i];
+    m_products.clear();
+    delete m_layout;
+    m_layout = new QGridLayout;
+
+    m_layoutRow = 0;
+    m_layoutColumn = 0;
+    if (arg1 == ui->comboBox->itemText(0))
+        showProducts("*");
+    else if (arg1 == ui->comboBox->itemText(1))
+        showProducts("AB");
+    else if (arg1 == ui->comboBox->itemText(2))
+        showProducts("L");
+    else if (arg1 == ui->comboBox->itemText(3))
+        showProducts("E");
+    else if (arg1 == ui->comboBox->itemText(4))
+        showProducts("HC");
+    else if (arg1 == ui->comboBox->itemText(5))
+        showProducts("D");
+
 }

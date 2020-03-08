@@ -53,8 +53,10 @@ private slots:
 
     void on_emailLE_textChanged(const QString &arg1);
 
-    void showProducts();
-    void addToGrid(QGridLayout* layout, Producto* producto);
+    void showProducts(QString category);
+    void addToGrid(Producto* producto);
+
+    void on_comboBox_currentIndexChanged(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
@@ -66,5 +68,9 @@ private:
     QJsonArray m_database;
     QJsonArray m_productDb;
     vector<Producto*> m_products;
+    QGridLayout *m_layout;
+
+    int m_layoutRow;
+    int m_layoutColumn;
 };
 #endif // MAINWINDOW_H
