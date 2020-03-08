@@ -33,6 +33,7 @@ void Producto::changeImage(QString data)
     QString tmp = "imgs/";
     tmp += data;
     QPixmap pix(tmp);
-    pix.scaled(ui->imageL->width(), ui->imageL->height());
-    ui->imageL->setPixmap(pix);
+
+    ui->imageL->setPixmap(pix.scaled(this->width(), this->height(), Qt::KeepAspectRatio));
+    ui->imageL->setAlignment(Qt::AlignCenter);
 }

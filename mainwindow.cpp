@@ -246,7 +246,7 @@ void MainWindow::showProducts(QString category)
         for (int j = 0; j < img.size(); ++j)
             if (img[j] < '0' || img[j] > '9')
                 idCmp += img[j];
-        qDebug() << idCmp << endl;
+
         if (category == "*" || idCmp == category)
         {
             tmp->changeName(auxJson["name"].toString());
