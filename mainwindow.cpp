@@ -24,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow()
 {
-    //saveDB();
+    saveDB();
     for (int i = 0; i < m_products.size(); ++i)
         delete m_products[i];
     m_products.clear();
@@ -108,18 +108,19 @@ void MainWindow::on_createPB_clicked()
             for (i = 0; i < m_users.size(); i++)
             {
                 if (userTmp.getEmail() == m_users.at(i).getEmail())
+                {
                     QMessageBox::warning(this, "invalid email",
                                          "email is already in use");
+                    break;
+                }
                 else if (userTmp.getUsername() == m_users.at(i).getUsername())
+                {
                     QMessageBox::warning(this, "invalid username",
                                          "username is already in use");
-                else
-                {
-                    create = true;
-                    QMessageBox::about(this, "User created", "User created succesfully");
+                    break;
                 }
             }
-            if (m_users.empty())
+            if (i == m_users.size())
                 create = true;
         }
         else
@@ -160,6 +161,7 @@ void MainWindow::on_loginPB_clicked()
                 QMessageBox::about(this, "Welcome", "Welcome to Nile!!");
 
                 success = true;
+                break;
             }
             else
                 QMessageBox::warning(this, "Invalid user/password", "Invalid user/password");
@@ -181,10 +183,12 @@ void MainWindow::saveDB()
     QJsonObject jsonObj;
 
     jsonObj["users"] = m_database;
+    jsonObj["products"] = m_productDb;
     jsonDoc = QJsonDocument(jsonObj);
 
     m_dbFile.open(QIODevice::WriteOnly);
     m_dbFile.write(jsonDoc.toJson());
+
     m_dbFile.close();
 }
 
