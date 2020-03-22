@@ -20,11 +20,18 @@ public:
     ~Producto();
 
     void changeName(QString data);
-    void changePrice(QString data);
+    void changePrice(float data);
     void changeImage(QString data);
+
+    float getPrice() const;
+    QString getName();
+
+    bool operator < (const Producto& other);
+    bool operator > (const Producto& other);
 
 private:
     Ui::Producto *ui;
+    float m_price;
 };
 
 #endif // PRODUCTO_H

@@ -20,10 +20,11 @@ void Producto::changeName(QString data)
     ui->nameL->setMaximumHeight(60);
 }
 
-void Producto::changePrice(QString data)
+void Producto::changePrice(float data)
 {
+    m_price = data;
     QString tmp = "$";
-    tmp += data;
+    tmp += QString::number(data);
     ui->priceL->setText(tmp);
     ui->priceL->setMaximumHeight(50);
 }
@@ -36,4 +37,24 @@ void Producto::changeImage(QString data)
 
     ui->imageL->setPixmap(pix.scaled(this->width(), this->height(), Qt::KeepAspectRatio));
     ui->imageL->setAlignment(Qt::AlignCenter);
+}
+
+float Producto::getPrice() const
+{
+    return m_price;
+}
+
+QString Producto::getName()
+{
+    return ui->nameL->text();
+}
+
+bool Producto::operator < (const Producto &other)
+{
+    return this->getPrice() < other.getPrice();
+}
+
+bool Producto::operator >(const Producto &other)
+{
+    return this->getPrice() > other.getPrice();
 }

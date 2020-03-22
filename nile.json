@@ -301,6 +301,11 @@
             "email": "LUCERO.MENDEZ@nile.com",
             "name": "LUCERO MENDEZ",
             "password": "LUME032"
+        },
+        {
+            "email": "pp@gmail.com",
+            "name": "pp",
+            "password": "pp"
         }
     ]
 }

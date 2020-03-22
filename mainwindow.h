@@ -39,24 +39,23 @@ private slots:
     void on_newUsernameLE_textChanged(const QString &arg1);
     void on_newEmailLE_textChanged(const QString &arg1);
     void on_newPasswordLE_textChanged(const QString &arg1);
+    void on_categoriaCB_currentIndexChanged(int index);
+    void on_filtroCB_currentIndexChanged(int index);
+    void on_emailLE_textChanged(const QString &arg1);
+    void on_createPB_clicked();
+    void on_loginPB_clicked();
+
     void openFile();
 
     void enableLoginPB();
     void enableCreatePB();
 
-    void on_createPB_clicked();
-
-    void on_loginPB_clicked();
-
     void saveDB();
     void loadDB();
 
-    void on_emailLE_textChanged(const QString &arg1);
-
     void showProducts(QString category);
     void addToGrid(Producto* producto);
-
-    void on_comboBox_currentIndexChanged(const QString &arg1);
+    void removeLayoutW();
 
 private:
     Ui::MainWindow *ui;
@@ -72,5 +71,21 @@ private:
 
     int m_layoutRow;
     int m_layoutColumn;
+
+    enum indiceCategoria
+    {
+        CATEGORIA_TODOS = 0,
+        CATEGORIA_AB,
+        CATEGORIA_L,
+        CATEGORIA_E,
+        CATEGORIA_HC,
+        CATEGORIA_D
+    };
+
+    enum indiceFiltro
+    {
+        FILTRO_MENOR_PRECIO = 0,
+        FILTRO_MAYOR_PRECIO,
+    };
 };
 #endif // MAINWINDOW_H

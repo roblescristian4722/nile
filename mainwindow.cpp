@@ -25,8 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     saveDB();
-    for (int i = 0; i < m_products.size(); ++i)
-        delete m_products[i];
+    while (m_layout->takeAt(0) != nullptr)
+        delete m_layout->takeAt(0);
     m_products.clear();
     delete ui;
 }
@@ -41,27 +41,27 @@ void MainWindow::enableLoginPB()
         ui->loginPB->setEnabled(false);
 }
 
-void MainWindow::on_passwordLE_textChanged(const QString &arg1)
+void MainWindow::on_passwordLE_textChanged(const QString &index)
 {
-    Q_UNUSED(arg1)
+    Q_UNUSED(index)
     enableLoginPB();
 }
 
-void MainWindow::on_newUsernameLE_textChanged(const QString &arg1)
+void MainWindow::on_newUsernameLE_textChanged(const QString &index)
 {
-    Q_UNUSED(arg1)
+    Q_UNUSED(index)
     enableCreatePB();
 }
 
-void MainWindow::on_newEmailLE_textChanged(const QString &arg1)
+void MainWindow::on_newEmailLE_textChanged(const QString &index)
 {
-    Q_UNUSED(arg1)
+    Q_UNUSED(index)
     enableCreatePB();
 }
 
-void MainWindow::on_newPasswordLE_textChanged(const QString &arg1)
+void MainWindow::on_newPasswordLE_textChanged(const QString &index)
 {
-    Q_UNUSED(arg1)
+    Q_UNUSED(index)
     enableCreatePB();
 }
 
@@ -220,9 +220,9 @@ void MainWindow::loadDB()
     m_dbFile.close();
 }
 
-void MainWindow::on_emailLE_textChanged(const QString &arg1)
+void MainWindow::on_emailLE_textChanged(const QString &index)
 {
-    Q_UNUSED(arg1)
+    Q_UNUSED(index)
     enableLoginPB();
 }
 
@@ -231,9 +231,13 @@ void MainWindow::showProducts(QString category)
     QJsonObject auxJson;
     Producto* tmp;
     QString img;
-    QString floatTmp;
     QString idCmp;
+    float floatTmp;
 
+    // Se eliminan los datos anteriores
+    removeLayoutW();
+
+    // Se ingresan los nuevos datos al layout
     for (int i = 0; i < m_productDb.size(); ++i)
     {
         idCmp = "";
@@ -255,17 +259,16 @@ void MainWindow::showProducts(QString category)
         {
             tmp->changeName(auxJson["name"].toString());
 
-            floatTmp = QString::number(auxJson["price"].toDouble());
+            floatTmp = auxJson["price"].toDouble();
             tmp->changePrice(floatTmp);
 
             img += ".jpg";
             tmp->changeImage(img);
 
-            addToGrid(tmp);
             m_products.push_back(tmp);
         }
     }
-    ui->tmpW->setLayout(m_layout);
+    on_filtroCB_currentIndexChanged(ui->filtroCB->currentIndex());
 }
 
 void MainWindow::addToGrid(Producto* producto)
@@ -277,30 +280,44 @@ void MainWindow::addToGrid(Producto* producto)
     m_layoutColumn %= MAX_ROWS;
 }
 
-void MainWindow::on_comboBox_currentIndexChanged(const QString &arg1)
+void MainWindow::removeLayoutW()
 {
-    // Se eliminan los datos anteriores
-    for (int i = 0; i < m_products.size(); ++i)
-        m_layout->removeWidget(m_products[i]);
-    for (int i = 0; i < m_products.size(); ++i)
+    for (size_t i = 0; i < m_products.size(); ++i)
         delete m_products[i];
-    m_products.clear();
-    delete m_layout;
-    m_layout = new QGridLayout;
-
     m_layoutRow = 0;
     m_layoutColumn = 0;
-    if (arg1 == ui->comboBox->itemText(0))
-        showProducts("*");
-    else if (arg1 == ui->comboBox->itemText(1))
-        showProducts("AB");
-    else if (arg1 == ui->comboBox->itemText(2))
-        showProducts("L");
-    else if (arg1 == ui->comboBox->itemText(3))
-        showProducts("E");
-    else if (arg1 == ui->comboBox->itemText(4))
-        showProducts("HC");
-    else if (arg1 == ui->comboBox->itemText(5))
-        showProducts("D");
+    m_products.clear();
+}
 
+void MainWindow::on_categoriaCB_currentIndexChanged(int index)
+{
+    m_layoutRow = 0;
+    m_layoutColumn = 0;
+    if (index == CATEGORIA_TODOS)
+        showProducts("*");
+    else if (index == CATEGORIA_AB)
+        showProducts("AB");
+    else if (index == CATEGORIA_L)
+        showProducts("L");
+    else if (index == CATEGORIA_E)
+        showProducts("E");
+    else if (index == CATEGORIA_HC)
+        showProducts("HC");
+    else if (index == CATEGORIA_D)
+        showProducts("D");
+}
+
+void MainWindow::on_filtroCB_currentIndexChanged(int index)
+{
+    m_layoutRow = 0;
+    m_layoutColumn = 0;
+    if (index == FILTRO_MENOR_PRECIO)
+        sort(m_products.begin(), m_products.end(), [](Producto* prod1, Producto* prod2)
+                                                    { return *prod1 < *prod2; });
+    else
+        sort(m_products.begin(), m_products.end(), [](Producto* prod1, Producto* prod2)
+                                                    { return *prod1 > *prod2; });
+    for (auto &x: m_products)
+        addToGrid(x);
+    ui->tmpW->setLayout(m_layout);
 }
