@@ -277,7 +277,7 @@ void MainWindow::showProducts(regex category, regex search)
         on_filtroCB_currentIndexChanged(ui->filtroCB->currentIndex());
     else
     {
-        QMessageBox::warning(this, "No matches", "The search didn't gave any results");
+        QMessageBox::warning(this, "No matches found", "The search didn't give any result");
         ui->categoriaCB->setCurrentIndex(CATEGORIA_TODOS);
         showProducts(regex(".+"));
     }
