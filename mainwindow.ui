@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
+   <layout class="QGridLayout" name="gridLayout_4">
     <item row="0" column="0">
      <widget class="QStackedWidget" name="viewSW">
       <property name="enabled">
@@ -184,17 +184,10 @@
        </layout>
       </widget>
       <widget class="QWidget" name="page_2">
-       <layout class="QGridLayout" name="gridLayout_4">
+       <layout class="QGridLayout" name="gridLayout">
         <item row="0" column="0">
-         <layout class="QFormLayout" name="formLayout_3">
-          <item row="0" column="0">
-           <widget class="QLabel" name="categoriaL">
-            <property name="text">
-             <string>Categoría:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
            <widget class="QComboBox" name="categoriaCB">
             <item>
              <property name="text">
@@ -228,14 +221,28 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
+          <item>
+           <widget class="QLineEdit" name="buscarLE"/>
+          </item>
+          <item>
+           <widget class="QPushButton" name="buscarL">
+            <property name="text">
+             <string>Buscar</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="1" column="0">
+         <layout class="QFormLayout" name="formLayout_3">
+          <item row="0" column="0">
            <widget class="QLabel" name="filtroL">
             <property name="text">
              <string>Filtrar por:</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
+          <item row="0" column="1">
            <widget class="QComboBox" name="filtroCB">
             <item>
              <property name="text">
@@ -251,7 +258,7 @@
           </item>
          </layout>
         </item>
-        <item row="1" column="0">
+        <item row="2" column="0">
          <widget class="QScrollArea" name="productosSA">
           <property name="widgetResizable">
            <bool>true</bool>
@@ -262,7 +269,7 @@
              <x>0</x>
              <y>0</y>
              <width>547</width>
-             <height>393</height>
+             <height>391</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">

@@ -174,7 +174,7 @@ void MainWindow::on_loginPB_clicked()
     ui->passwordLE->clear();
 
     if (success)
-        showProducts("*");
+        on_categoriaCB_currentIndexChanged(CATEGORIA_TODOS);
 }
 
 void MainWindow::saveDB()
@@ -226,12 +226,12 @@ void MainWindow::on_emailLE_textChanged(const QString &index)
     enableLoginPB();
 }
 
-void MainWindow::showProducts(QString category)
+void MainWindow::showProducts(regex category, regex search)
 {
     QJsonObject auxJson;
     Producto* tmp;
     QString img;
-    QString idCmp;
+    QString name;
     float floatTmp;
 
     // Se eliminan los datos anteriores
@@ -240,7 +240,6 @@ void MainWindow::showProducts(QString category)
     // Se ingresan los nuevos datos al layout
     for (int i = 0; i < m_productDb.size(); ++i)
     {
-        idCmp = "";
         tmp = new Producto;
         // Se obtiene el primer objeto de la tabla "products"
         // de la base de datos JSON
@@ -251,24 +250,38 @@ void MainWindow::showProducts(QString category)
         tmp->setMaximumWidth(200);
 
         img = auxJson["id"].toString();
-        for (int j = 0; j < img.size(); ++j)
-            if (img[j] < '0' || img[j] > '9')
-                idCmp += img[j];
 
-        if (category == "*" || idCmp == category)
+        name = auxJson["name"].toString();
+        for (auto &x: name)
+            x = x.toLower();
+
+        if (regex_match(img.toStdString(), category) && regex_match(name.toStdString(), search))
         {
-            tmp->changeName(auxJson["name"].toString());
+            // Se asigna el nombre al widget
+            tmp->changeName(name);
 
+            // Se asigna el precio al widget
             floatTmp = auxJson["price"].toDouble();
             tmp->changePrice(floatTmp);
 
+            // Se asigna la imagen al widget
+            img = auxJson["id"].toString();
             img += ".jpg";
             tmp->changeImage(img);
 
+            // Se guarda el puntero del widget en el vector
             m_products.push_back(tmp);
         }
     }
-    on_filtroCB_currentIndexChanged(ui->filtroCB->currentIndex());
+    if (m_products.size())
+        on_filtroCB_currentIndexChanged(ui->filtroCB->currentIndex());
+    else
+    {
+        QMessageBox::warning(this, "No matches", "The search didn't gave any results");
+        ui->categoriaCB->setCurrentIndex(CATEGORIA_TODOS);
+        showProducts(regex(".+"));
+    }
+    this->setCursor(Qt::ArrowCursor);
 }
 
 void MainWindow::addToGrid(Producto* producto)
@@ -289,22 +302,23 @@ void MainWindow::removeLayoutW()
     m_products.clear();
 }
 
-void MainWindow::on_categoriaCB_currentIndexChanged(int index)
+void MainWindow::on_categoriaCB_currentIndexChanged(int index, regex search)
 {
+    this->setCursor(Qt::WaitCursor);
     m_layoutRow = 0;
     m_layoutColumn = 0;
     if (index == CATEGORIA_TODOS)
-        showProducts("*");
+        showProducts(regex(".+"), search);
     else if (index == CATEGORIA_AB)
-        showProducts("AB");
+        showProducts(regex("AB\\w+"), search);
     else if (index == CATEGORIA_L)
-        showProducts("L");
+        showProducts(regex("L\\w+"), search);
     else if (index == CATEGORIA_E)
-        showProducts("E");
+        showProducts(regex("E\\w+"), search);
     else if (index == CATEGORIA_HC)
-        showProducts("HC");
+        showProducts(regex("HC\\w+"), search);
     else if (index == CATEGORIA_D)
-        showProducts("D");
+        showProducts(regex("D\\w+"), search);
 }
 
 void MainWindow::on_filtroCB_currentIndexChanged(int index)
@@ -314,10 +328,19 @@ void MainWindow::on_filtroCB_currentIndexChanged(int index)
     if (index == FILTRO_MENOR_PRECIO)
         sort(m_products.begin(), m_products.end(), [](Producto* prod1, Producto* prod2)
                                                     { return *prod1 < *prod2; });
-    else
+    else if (index == FILTRO_MAYOR_PRECIO)
         sort(m_products.begin(), m_products.end(), [](Producto* prod1, Producto* prod2)
                                                     { return *prod1 > *prod2; });
     for (auto &x: m_products)
         addToGrid(x);
     ui->tmpW->setLayout(m_layout);
+}
+
+void MainWindow::on_buscarL_clicked()
+{
+    string expression = ".*";
+    expression += ui->buscarLE->text().toStdString();
+    expression += ".*";
+
+    on_categoriaCB_currentIndexChanged(ui->categoriaCB->currentIndex(), regex(expression));
 }

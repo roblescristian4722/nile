@@ -39,7 +39,7 @@ private slots:
     void on_newUsernameLE_textChanged(const QString &arg1);
     void on_newEmailLE_textChanged(const QString &arg1);
     void on_newPasswordLE_textChanged(const QString &arg1);
-    void on_categoriaCB_currentIndexChanged(int index);
+    void on_categoriaCB_currentIndexChanged(int index, regex search = regex(".+"));
     void on_filtroCB_currentIndexChanged(int index);
     void on_emailLE_textChanged(const QString &arg1);
     void on_createPB_clicked();
@@ -53,9 +53,11 @@ private slots:
     void saveDB();
     void loadDB();
 
-    void showProducts(QString category);
+    void showProducts(regex category, regex search = regex(".+"));
     void addToGrid(Producto* producto);
     void removeLayoutW();
+
+    void on_buscarL_clicked();
 
 private:
     Ui::MainWindow *ui;
