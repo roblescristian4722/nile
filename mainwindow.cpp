@@ -255,7 +255,7 @@ void MainWindow::showProducts(regex category, regex search)
         for (auto &x: name)
             x = x.toLower();
 
-        if (regex_match(img.toStdString(), category) && regex_match(name.toStdString(), search))
+        if (regex_match(img.toStdString(), category) && regex_match(name.toLower().toStdString() , search))
         {
             // Se asigna el nombre al widget
             tmp->changeName(name);
@@ -339,7 +339,7 @@ void MainWindow::on_filtroCB_currentIndexChanged(int index)
 void MainWindow::on_buscarL_clicked()
 {
     string expression = ".*";
-    expression += ui->buscarLE->text().toStdString();
+    expression += ui->buscarLE->text().toLower().toStdString();
     expression += ".*";
 
     on_categoriaCB_currentIndexChanged(ui->categoriaCB->currentIndex(), regex(expression));

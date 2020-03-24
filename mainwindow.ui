@@ -227,7 +227,7 @@
           <item>
            <widget class="QPushButton" name="buscarL">
             <property name="text">
-             <string>Buscar</string>
+             <string>Search</string>
             </property>
            </widget>
           </item>
@@ -238,7 +238,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="filtroL">
             <property name="text">
-             <string>Filtrar por:</string>
+             <string>Sort by:</string>
             </property>
            </widget>
           </item>
@@ -246,12 +246,12 @@
            <widget class="QComboBox" name="filtroCB">
             <item>
              <property name="text">
-              <string>Menor precio</string>
+              <string>Price: Low to High</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Mayor precio</string>
+              <string>Price: High to Low</string>
              </property>
             </item>
            </widget>
@@ -269,7 +269,7 @@
              <x>0</x>
              <y>0</y>
              <width>547</width>
-             <height>391</height>
+             <height>403</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -300,7 +300,7 @@
      <x>0</x>
      <y>0</y>
      <width>585</width>
-     <height>27</height>
+     <height>24</height>
     </rect>
    </property>
   </widget>
