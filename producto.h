@@ -1,15 +1,14 @@
 #ifndef PRODUCTO_H
 #define PRODUCTO_H
 
+#include <iostream>
 #include <QWidget>
 #include <QDebug>
 #include <QString>
-#include <iostream>
 using namespace std;
 
-namespace Ui {
-class Producto;
-}
+namespace Ui
+{ class Producto; }
 
 class Producto : public QWidget
 {
@@ -29,8 +28,17 @@ public:
     bool operator < (const Producto& other);
     bool operator > (const Producto& other);
 
+private slots:
+    void on_addPB_clicked();
+
+    void on_numberProductsSB_valueChanged(int arg1);
+
+signals:
+    void add_to_purchase(QString id, int total);
+
 private:
     Ui::Producto *ui;
+    QString m_id;
     float m_price;
 };
 

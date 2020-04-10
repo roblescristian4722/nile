@@ -7,7 +7,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     this->setWindowTitle("Nile");
-    this->setMinimumSize(700, 600);
+    this->setMinimumSize(WINDOW_MIN_W, WINDOW_MIN_H);
     ui->productosSA->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
     ui->productosSA->setWidgetResizable(true);
 
@@ -34,9 +34,7 @@ MainWindow::~MainWindow()
 void MainWindow::enableLoginPB()
 {
     if (ui->emailLE->text().length() && ui->passwordLE->text().length())
-    {
         ui->loginPB->setEnabled(true);
-    }
     else
         ui->loginPB->setEnabled(false);
 }
@@ -92,8 +90,7 @@ void MainWindow::enableCreatePB()
 void MainWindow::on_createPB_clicked()
 {
     QJsonObject jsonObj;
-    bool create = false;
-    unsigned int i;
+    size_t i;
     regex regEmail("[a-zA-Z0-9-_.]+@[a-zA-Z0-9]+.+[a-zA-Z]");
     regex regUser("[A-Za-z0-9-_.]*");
     User userTmp;
@@ -101,14 +98,15 @@ void MainWindow::on_createPB_clicked()
     userTmp.setPassword(ui->newPasswordLE->text());
     userTmp.setUsername(ui->newUsernameLE->text());
 
-    if (regex_match(userTmp.getEmail().toStdString(), regEmail))
-    {
-        if (regex_match(userTmp.getUsername().toStdString(), regUser))
-        {
-            for (i = 0; i < m_users.size(); i++)
-            {
-                if (userTmp.getEmail() == m_users.at(i).getEmail())
-                {
+    // Se valida que tanto el email como el username estén
+    // bien escritos conforme a las expresiones regulares
+    if (regex_match(userTmp.getEmail().toStdString(), regEmail)){
+        if (regex_match(userTmp.getUsername().toStdString(), regUser)){
+
+            // Se comparan los datos con los de todos los usuarios
+            // en el vector
+            for (i = 0; i < m_users.size(); i++){
+                if (userTmp.getEmail() == m_users.at(i).getEmail()){
                     QMessageBox::warning(this, "invalid email",
                                          "email is already in use");
                     break;
@@ -120,8 +118,15 @@ void MainWindow::on_createPB_clicked()
                     break;
                 }
             }
-            if (i == m_users.size())
-                create = true;
+            if (i == m_users.size()){
+                m_users.push_back(userTmp);
+                jsonObj["name"] = userTmp.getUsername();
+                jsonObj["email"] = userTmp.getEmail();
+                jsonObj["password"] = userTmp.getPassword();
+                jsonObj["purchase"];
+                m_userDb.append(jsonObj);
+                QMessageBox::about(this, "User created", "User created succesfully");
+            }
         }
         else
             QMessageBox::warning(this, "invalid username",
@@ -132,15 +137,6 @@ void MainWindow::on_createPB_clicked()
         QMessageBox::warning(this, "invalid email",
                              "email needs an alphanumeric format, period, dash and/or underscore "
                              "followed by \"@<domain>.<extension>\"");
-    if (create)
-    {
-        m_users.push_back(userTmp);
-        jsonObj["name"] = userTmp.getUsername();
-        jsonObj["email"] = userTmp.getEmail();
-        jsonObj["password"] = userTmp.getPassword();
-        m_database.append(jsonObj);
-        QMessageBox::about(this, "User created", "User created succesfully");
-    }
 
     ui->newEmailLE->clear();
     ui->newPasswordLE->clear();
@@ -150,16 +146,22 @@ void MainWindow::on_createPB_clicked()
 void MainWindow::on_loginPB_clicked()
 {
     bool success = false;
-    unsigned int i;
-    for (i = 0; i < m_users.size(); i++)
-    {
-        if (m_users.at(i).getEmail() == ui->emailLE->text())
-        {
-            if (m_users.at(i).getPassword() == ui->passwordLE->text())
-            {
+    size_t i;
+    QDate date = QDate::currentDate();
+    QTime time = QTime::currentTime();
+    QString dateTime = date.toString() + " " + time.toString();
+    QJsonObject userTmp;
+
+    // Se comparan los usuarios de la base de datos con el recién ingresado
+    for (i = 0; i < m_users.size(); i++){
+        if (m_users[i].getEmail() == ui->emailLE->text()){
+            if (m_users[i].getPassword() == ui->passwordLE->text()){
+                // Si hay una coincidencia se busca ese mismo usuario en QJsonArray de
+                // usuarios para añadir la nueva sesión
+                m_dateSession = dateTime;
+                m_currentUser = ui->emailLE->text();
                 ui->viewSW->setCurrentIndex(1);
                 QMessageBox::about(this, "Welcome", "Welcome to Nile!!");
-
                 success = true;
                 break;
             }
@@ -173,18 +175,53 @@ void MainWindow::on_loginPB_clicked()
     ui->emailLE->clear();
     ui->passwordLE->clear();
 
-    if (success)
+    if (success){
+        m_users.clear();
         on_categoriaCB_currentIndexChanged(CATEGORIA_TODOS);
+    }
 }
 
 void MainWindow::saveDB()
 {
     QJsonDocument jsonDoc;
+    QJsonObject jsonDocToObj;
     QJsonObject jsonObj;
+    QJsonObject purchaseObj;
+    QJsonArray timeDateObj;
+    QJsonObject aux;
+    map<QString, int>::iterator it;
+    int sold = 0;
 
-    jsonObj["users"] = m_database;
-    jsonObj["products"] = m_productDb;
-    jsonDoc = QJsonDocument(jsonObj);
+    for (int i = 0; i < m_userDb.size(); ++i)
+        if (m_userDb[i].toObject()["email"].toString() == m_currentUser){
+            jsonObj = m_userDb[i].toObject();
+            purchaseObj = jsonObj["purchase"].toObject();
+            timeDateObj = purchaseObj[m_dateSession].toArray();
+            for (it = m_shoppingCart.begin(); it != m_shoppingCart.end(); it++){
+                aux["id"] = it->first;
+                timeDateObj.append(aux);
+            }
+            purchaseObj[m_dateSession] = timeDateObj;
+            jsonObj["purchase"] = purchaseObj;
+            m_userDb[i] = jsonObj;
+        }
+
+    for (int i = 0; i < m_productDb.size(); ++i){
+        jsonObj = m_productDb[i].toObject();
+        // Se busca el producto de la base de datos en el carrito de compras
+        it = m_shoppingCart.find(jsonObj["id"].toString());
+        // Si el producto fue vendido esta sesión se cambia su valor
+        if (it != m_shoppingCart.end()){
+            sold = jsonObj["sold"].toInt();
+            sold += it->second;
+            jsonObj["sold"] = sold;
+            m_productDb[i] = jsonObj;
+        }
+
+    }
+    jsonDocToObj["users"] = m_userDb;
+    jsonDocToObj["products"] = m_productDb;
+    jsonDoc = QJsonDocument(jsonDocToObj);
 
     m_dbFile.open(QIODevice::WriteOnly);
     m_dbFile.write(jsonDoc.toJson());
@@ -205,12 +242,12 @@ void MainWindow::loadDB()
     data = m_dbFile.readAll();
     jsonDoc = QJsonDocument::fromJson(data);
     jsonObj = jsonDoc.object();
-    m_database = jsonObj["users"].toArray();
+    m_userDb = jsonObj["users"].toArray();
     m_productDb = jsonObj["products"].toArray();
 
-    for (int i = 0; i < m_database.size(); i++)
+    for (int i = 0; i < m_userDb.size(); i++)
     {
-        jsonAux = m_database[i].toObject();
+        jsonAux = m_userDb[i].toObject();
         userAux.setEmail(jsonAux["email"].toString());
         userAux.setUsername(jsonAux["name"].toString());
         userAux.setPassword(jsonAux["password"].toString());
@@ -246,8 +283,8 @@ void MainWindow::showProducts(regex category, regex search)
         auxJson = m_productDb[i].toObject();
 
         // Se obtiene el nombre de dicho objeto y se c
-        tmp->setMaximumHeight(300);
-        tmp->setMaximumWidth(200);
+        tmp->setMinimumSize(WIDGET_MIN_W, WIDGET_MIN_H);
+        tmp->setMaximumSize(WIDGET_MAX_W, WIDGET_MAX_H);
 
         img = auxJson["id"].toString();
 
@@ -255,7 +292,7 @@ void MainWindow::showProducts(regex category, regex search)
         for (auto &x: name)
             x = x.toLower();
 
-        if (regex_match(img.toStdString(), category) && regex_match(name.toLower().toStdString() , search))
+        if (regex_match(img.toStdString(), category) && regex_match(name.toStdString(), search))
         {
             // Se asigna el nombre al widget
             tmp->changeName(name);
@@ -266,11 +303,11 @@ void MainWindow::showProducts(regex category, regex search)
 
             // Se asigna la imagen al widget
             img = auxJson["id"].toString();
-            img += ".jpg";
             tmp->changeImage(img);
 
             // Se guarda el puntero del widget en el vector
             m_products.push_back(tmp);
+            connect (m_products.back(), &Producto::add_to_purchase, this, &MainWindow::added);
         }
     }
     if (m_products.size())
@@ -286,11 +323,18 @@ void MainWindow::showProducts(regex category, regex search)
 
 void MainWindow::addToGrid(Producto* producto)
 {
+    int rows;
     m_layout->addWidget(producto, m_layoutRow, m_layoutColumn);
-    if (m_layoutColumn == MAX_ROWS - 1)
-        ++m_layoutRow;
-    ++m_layoutColumn;
-    m_layoutColumn %= MAX_ROWS;
+    if (this->height() > WINDOW_MIN_H && this->width() > WINDOW_MIN_W)
+        rows = MAX_ROWS_MAX_SIZE;
+    else
+        rows = MAX_ROWS_MIN_SIZE;
+
+        if (m_layoutColumn == rows - 1)
+            ++m_layoutRow;
+        ++m_layoutColumn;
+        m_layoutColumn %= rows;
+
 }
 
 void MainWindow::removeLayoutW()
@@ -339,8 +383,17 @@ void MainWindow::on_filtroCB_currentIndexChanged(int index)
 void MainWindow::on_buscarL_clicked()
 {
     string expression = ".*";
-    expression += ui->buscarLE->text().toLower().toStdString();
+    expression += ui->buscarLE->text().toStdString();
     expression += ".*";
 
     on_categoriaCB_currentIndexChanged(ui->categoriaCB->currentIndex(), regex(expression));
+}
+
+void MainWindow::added(QString id, int total)
+{
+    QJsonObject userTmp;
+    if (m_shoppingCart.find(id) == m_shoppingCart.end())
+        m_shoppingCart[id] = total;
+    else
+        m_shoppingCart[id] += total;
 }

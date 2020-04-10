@@ -10,6 +10,12 @@
     <height>559</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Ignored" vsizetype="Ignored">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
@@ -227,7 +233,7 @@
           <item>
            <widget class="QPushButton" name="buscarL">
             <property name="text">
-             <string>Search</string>
+             <string>Buscar</string>
             </property>
            </widget>
           </item>
@@ -238,7 +244,7 @@
           <item row="0" column="0">
            <widget class="QLabel" name="filtroL">
             <property name="text">
-             <string>Sort by:</string>
+             <string>Filtrar por:</string>
             </property>
            </widget>
           </item>
@@ -246,12 +252,12 @@
            <widget class="QComboBox" name="filtroCB">
             <item>
              <property name="text">
-              <string>Price: Low to High</string>
+              <string>Menor precio</string>
              </property>
             </item>
             <item>
              <property name="text">
-              <string>Price: High to Low</string>
+              <string>Mayor precio</string>
              </property>
             </item>
            </widget>
@@ -268,8 +274,8 @@
             <rect>
              <x>0</x>
              <y>0</y>
-             <width>547</width>
-             <height>403</height>
+             <width>66</width>
+             <height>28</height>
             </rect>
            </property>
            <layout class="QGridLayout" name="gridLayout_5">
@@ -300,7 +306,7 @@
      <x>0</x>
      <y>0</y>
      <width>585</width>
-     <height>24</height>
+     <height>27</height>
     </rect>
    </property>
   </widget>

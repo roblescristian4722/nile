@@ -1,9 +1,23 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#define MAX_ROWS 3
+#define MAX_ROWS_MAX_SIZE 3
+#define MAX_ROWS_MIN_SIZE 2
+#define WINDOW_MAX_W 500
+#define WINDOW_MAX_H 400
+#define WINDOW_MIN_W 700
+#define WINDOW_MIN_H 600
+#define WIDGET_MIN_H 200
+#define WIDGET_MIN_W 300
+#define WIDGET_MAX_H 400
+#define WIDGET_MAX_W 500
 
 #include <iostream>
+#include "user.h"
+#include "producto.h"
+#include <vector>
+#include <regex>
+#include <map>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
@@ -15,10 +29,8 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QGridLayout>
-#include <vector>
-#include <regex>
-#include "user.h"
-#include "producto.h"
+#include <QDesktopWidget>
+#include <QDateTime>
 
 using namespace std;
 
@@ -44,6 +56,7 @@ private slots:
     void on_emailLE_textChanged(const QString &arg1);
     void on_createPB_clicked();
     void on_loginPB_clicked();
+    void on_buscarL_clicked();
 
     void openFile();
 
@@ -56,20 +69,30 @@ private slots:
     void showProducts(regex category, regex search = regex(".+"));
     void addToGrid(Producto* producto);
     void removeLayoutW();
-
-    void on_buscarL_clicked();
+    void added(QString id, int total);
 
 private:
     Ui::MainWindow *ui;
-    vector<User> m_users;
 
+    // Objetos para abrir correctamente el
+    // archivo de datos
     QAction* m_openFileAction;
     QMenu* m_fileMenu;
     QFile m_dbFile;
-    QJsonArray m_database;
+
+    // Data Bases
+    QJsonArray m_userDb;
     QJsonArray m_productDb;
+    vector<User> m_users;
+
+    // Para mostrar los productos de manera
+    // correcta
     vector<Producto*> m_products;
     QGridLayout *m_layout;
+
+    QString m_dateSession;
+    QString m_currentUser;
+    map<QString, int> m_shoppingCart;
 
     int m_layoutRow;
     int m_layoutColumn;
