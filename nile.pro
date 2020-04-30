@@ -22,6 +22,7 @@ SOURCES += \
     user.cpp
 
 HEADERS += \
+    graph.h \
     mainwindow.h \
     producto.h \
     user.h

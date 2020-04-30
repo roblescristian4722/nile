@@ -111,8 +111,7 @@ void MainWindow::on_createPB_clicked()
                                          "email is already in use");
                     break;
                 }
-                else if (userTmp.getUsername() == m_users.at(i).getUsername())
-                {
+                else if (userTmp.getUsername() == m_users.at(i).getUsername()){
                     QMessageBox::warning(this, "invalid username",
                                          "username is already in use");
                     break;
@@ -187,22 +186,35 @@ void MainWindow::saveDB()
     QJsonObject jsonDocToObj;
     QJsonObject jsonObj;
     QJsonObject purchaseObj;
-    QJsonArray timeDateObj;
     QJsonObject aux;
+    QJsonObject timeDateObj;
+    QJsonArray purchaseArr;
+    QJsonArray timeDateArr;
     map<QString, int>::iterator it;
     int sold = 0;
 
+    // Se itera por la base de datos del usuario hasta encontrar el usuario
+    // de la sesión actual
     for (int i = 0; i < m_userDb.size(); ++i)
         if (m_userDb[i].toObject()["email"].toString() == m_currentUser){
+            // Objeto usuario
             jsonObj = m_userDb[i].toObject();
-            purchaseObj = jsonObj["purchase"].toObject();
-            timeDateObj = purchaseObj[m_dateSession].toArray();
+            // Array purchase - Se guarda para no perder los datos
+            // previamente almacenados
+            purchaseArr = jsonObj["purchase"].toArray();
             for (it = m_shoppingCart.begin(); it != m_shoppingCart.end(); it++){
                 aux["id"] = it->first;
-                timeDateObj.append(aux);
+                timeDateArr.append(aux);
             }
-            purchaseObj[m_dateSession] = timeDateObj;
-            jsonObj["purchase"] = purchaseObj;
+            // Se guarda el array timeDate dentro de un objeto que tiene
+            // la fecha y hora de la sesión como llave
+            timeDateObj[m_dateSession] = timeDateArr;
+            // Luego se almacena el objeto completo en el array de compras
+            purchaseArr.append(timeDateObj);
+            // Después se sustituyen los datos en purchase por la versión
+            // actualizada del array
+            jsonObj["purchase"] = purchaseArr;
+            // Y finalmente se cambia todo purchase del objeto usuario
             m_userDb[i] = jsonObj;
         }
 
@@ -232,11 +244,15 @@ void MainWindow::saveDB()
 void MainWindow::loadDB()
 {
     QJsonDocument jsonDoc;
-    QJsonObject jsonObj;
     QByteArray data;
-
-    QJsonObject jsonAux;
     User userAux;
+    QJsonObject jsonObj;
+    QJsonObject jsonAux;
+    QJsonArray purchases;
+    QJsonObject purchasesTmp;
+    QJsonObject nestedItem;
+    QString item, item2;
+    int cost = 0;
 
     m_dbFile.open(QIODevice::ReadOnly);
     data = m_dbFile.readAll();
@@ -244,7 +260,6 @@ void MainWindow::loadDB()
     jsonObj = jsonDoc.object();
     m_userDb = jsonObj["users"].toArray();
     m_productDb = jsonObj["products"].toArray();
-
     for (int i = 0; i < m_userDb.size(); i++)
     {
         jsonAux = m_userDb[i].toObject();
@@ -253,6 +268,28 @@ void MainWindow::loadDB()
         userAux.setPassword(jsonAux["password"].toString());
         m_users.push_back(userAux);
     }
+    for (int i = 0; i < m_userDb.size(); ++i){
+        // usuario
+        jsonObj =  m_userDb[i].toObject();
+        // todo el objeto de compras se almacena en un array
+        // y al mismo tiempo creamos un object para obtener la
+        // cantidad de objetos anidados
+        purchases = jsonObj["purchase"].toArray();
+        purchasesTmp = jsonObj["purchase"].toObject();
+        // Se itera por dicho array y se guarda cada sesión
+        // en otro array
+        for (int j = 0; j < purchasesTmp.size(); ++j){
+            item = purchases[i].toString();
+            item2 = purchases[i + 1].toString();
+            qDebug() << item << " " << item2 << endl;
+            if (m_graph.isEdge(item.toStdString(), item2.toStdString()))
+                cost = m_graph.getCost(item.toStdString(), item2.toStdString());
+            ++cost;
+            m_graph.createEdge(item.toStdString(), item2.toStdString(), cost);
+            cost = 0;
+        }
+    }
+    m_graph.printData();
 
     m_dbFile.close();
 }

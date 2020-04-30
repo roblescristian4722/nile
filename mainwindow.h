@@ -15,6 +15,7 @@
 #include <iostream>
 #include "user.h"
 #include "producto.h"
+#include "graph.h"
 #include <vector>
 #include <regex>
 #include <map>
@@ -93,6 +94,10 @@ private:
     QString m_dateSession;
     QString m_currentUser;
     map<QString, int> m_shoppingCart;
+
+    // Grafo que se utilizará a futuro para
+    // las recomendaciones de productos
+    Graph<string> m_graph;
 
     int m_layoutRow;
     int m_layoutColumn;
