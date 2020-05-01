@@ -249,9 +249,10 @@ void MainWindow::loadDB()
     QJsonObject jsonObj;
     QJsonObject jsonAux;
     QJsonArray purchases;
-    QJsonObject purchasesTmp;
+    QJsonArray nestedArray;
     QJsonObject nestedItem;
     QString item, item2;
+    QJsonObject::iterator it, it2;
     int cost = 0;
 
     m_dbFile.open(QIODevice::ReadOnly);
@@ -260,33 +261,40 @@ void MainWindow::loadDB()
     jsonObj = jsonDoc.object();
     m_userDb = jsonObj["users"].toArray();
     m_productDb = jsonObj["products"].toArray();
-    for (int i = 0; i < m_userDb.size(); i++)
-    {
+    for (int i = 0; i < m_userDb.size(); i++){
         jsonAux = m_userDb[i].toObject();
         userAux.setEmail(jsonAux["email"].toString());
         userAux.setUsername(jsonAux["name"].toString());
         userAux.setPassword(jsonAux["password"].toString());
         m_users.push_back(userAux);
     }
+
+    // Se guardan los datos en el grafo y se calculan sus pesos
+    //
+    // Itera por los usuarios disponibles
     for (int i = 0; i < m_userDb.size(); ++i){
         // usuario
         jsonObj =  m_userDb[i].toObject();
         // todo el objeto de compras se almacena en un array
-        // y al mismo tiempo creamos un object para obtener la
-        // cantidad de objetos anidados
+        // para iterar sobre este
         purchases = jsonObj["purchase"].toArray();
-        purchasesTmp = jsonObj["purchase"].toObject();
         // Se itera por dicho array y se guarda cada sesión
         // en otro array
-        for (int j = 0; j < purchasesTmp.size(); ++j){
-            item = purchases[i].toString();
-            item2 = purchases[i + 1].toString();
-            qDebug() << item << " " << item2 << endl;
-            if (m_graph.isEdge(item.toStdString(), item2.toStdString()))
-                cost = m_graph.getCost(item.toStdString(), item2.toStdString());
-            ++cost;
-            m_graph.createEdge(item.toStdString(), item2.toStdString(), cost);
-            cost = 0;
+        for (int j = 0; j < purchases.size(); ++j){
+            jsonAux = purchases[j].toObject();
+            nestedArray = jsonAux.begin()->toArray();
+            // Itera por cada identificador
+            for (int k = 0; k < nestedArray.size() - 1; ++k){
+                nestedItem = nestedArray[k].toObject();
+                item = nestedItem["id"].toString();
+                nestedItem = nestedArray[k + 1].toObject();
+                item2 = nestedItem["id"].toString();
+                if (m_graph.isEdge(item.toStdString(), item2.toStdString()))
+                    cost = m_graph.getCost(item.toStdString(), item2.toStdString());
+                ++cost;
+                m_graph.createEdge(item.toStdString(), item2.toStdString(), cost);
+                cost = 0;
+            }
         }
     }
     m_graph.printData();
