@@ -252,7 +252,6 @@ void MainWindow::loadDB()
     QJsonArray nestedArray;
     QJsonObject nestedItem;
     QString item, item2;
-    QJsonObject::iterator it, it2;
     int cost = 0;
 
     m_dbFile.open(QIODevice::ReadOnly);
@@ -284,16 +283,17 @@ void MainWindow::loadDB()
             jsonAux = purchases[j].toObject();
             nestedArray = jsonAux.begin()->toArray();
             // Itera por cada identificador
-            for (int k = 0; k < nestedArray.size() - 1; ++k){
-                nestedItem = nestedArray[k].toObject();
-                item = nestedItem["id"].toString();
-                nestedItem = nestedArray[k + 1].toObject();
-                item2 = nestedItem["id"].toString();
-                if (m_graph.isEdge(item.toStdString(), item2.toStdString()))
-                    cost = m_graph.getCost(item.toStdString(), item2.toStdString());
-                ++cost;
-                m_graph.createEdge(item.toStdString(), item2.toStdString(), cost);
-                cost = 0;
+            for (int k = 0; k < nestedArray.size() - 1; ++k)
+                for (int l = k + 1; l < nestedArray.size(); ++l){
+                    nestedItem = nestedArray[k].toObject();
+                    item = nestedItem["id"].toString();
+                    nestedItem = nestedArray[l].toObject();
+                    item2 = nestedItem["id"].toString();
+                    if (m_graph.isEdge(item.toStdString(), item2.toStdString()))
+                        cost = m_graph.getCost(item.toStdString(), item2.toStdString());
+                    ++cost;
+                    m_graph.createEdge(item.toStdString(), item2.toStdString(), cost);
+                    cost = 0;
             }
         }
     }
