@@ -18,11 +18,11 @@ void Producto::changeName(QString data)
     ui->nameL->setWordWrap(true);
 }
 
-void Producto::changePrice(float data)
+void Producto::changePrice(double data)
 {
     m_price = data;
     QString tmp = "$";
-    tmp += QString::number(double(data));
+    tmp += QString::number(data);
     ui->priceL->setText(tmp);
     ui->priceL->setMaximumHeight(50);
 }
@@ -38,7 +38,7 @@ void Producto::changeImage(QString data)
     ui->imageL->setAlignment(Qt::AlignCenter);
 }
 
-float Producto::getPrice() const
+double Producto::getPrice() const
 { return m_price; }
 
 QString Producto::getName()

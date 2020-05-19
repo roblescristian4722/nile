@@ -19,10 +19,10 @@ public:
     ~Producto();
 
     void changeName(QString data);
-    void changePrice(float data);
+    void changePrice(double data);
     void changeImage(QString data);
 
-    float getPrice() const;
+    double getPrice() const;
     QString getName();
 
     bool operator < (const Producto& other);
@@ -39,7 +39,7 @@ signals:
 private:
     Ui::Producto *ui;
     QString m_id;
-    float m_price;
+    double m_price;
 };
 
 #endif // PRODUCTO_H

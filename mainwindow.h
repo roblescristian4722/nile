@@ -19,6 +19,7 @@
 #include <vector>
 #include <regex>
 #include <map>
+#include <queue>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
@@ -33,6 +34,8 @@
 #include <QDesktopWidget>
 #include <QDateTime>
 
+#define TOTAL_RECOM 5
+#define PAIR pair<string, int>
 using namespace std;
 
 QT_BEGIN_NAMESPACE
@@ -72,8 +75,17 @@ private slots:
     void removeLayoutW();
     void added(QString id, int total);
 
+    void remove_layout_recom();
+    void update_recommendations();
+
 private:
     Ui::MainWindow *ui;
+
+    struct cmp
+    {
+        bool operator() (PAIR& a, PAIR&b)
+        { return a.second < b.second; }
+    };
 
     // Objetos para abrir correctamente el
     // archivo de datos
@@ -91,9 +103,16 @@ private:
     vector<Producto*> m_products;
     QGridLayout *m_layout;
 
+    // Para llevar el conteo de los productos comprados
     QString m_dateSession;
     QString m_currentUser;
     map<QString, int> m_shoppingCart;
+
+    // Para obtener las recomendaciones
+    priority_queue<PAIR, vector<PAIR>, cmp> m_recomQueue;
+    map<string, bool> m_recomAdded;
+    QGridLayout *m_layoutRecom;
+    vector<Producto*> m_recom;
 
     // Grafo que se utilizará a futuro para
     // las recomendaciones de productos

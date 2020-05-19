@@ -13,7 +13,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_layoutRow = 0;
     m_layoutColumn = 0;
-    m_layout = new QGridLayout;
+    m_layout = new QGridLayout(this);
+    m_layoutRecom = new QGridLayout(this);
     m_fileMenu = ui->menubar->addMenu(tr("&File"));
     m_openFileAction = new QAction(tr("Open File"), this);
     // Conectar evento y comportamiento
@@ -25,9 +26,8 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     saveDB();
-    while (m_layout->takeAt(0) != nullptr)
-        delete m_layout->takeAt(0);
-    m_products.clear();
+    removeLayoutW();
+    remove_layout_recom();
     delete ui;
 }
 
@@ -314,7 +314,7 @@ void MainWindow::showProducts(regex category, regex search)
     Producto* tmp;
     QString img;
     QString name;
-    float floatTmp;
+    double floatTmp;
 
     // Se eliminan los datos anteriores
     removeLayoutW();
@@ -375,10 +375,10 @@ void MainWindow::addToGrid(Producto* producto)
     else
         rows = MAX_ROWS_MIN_SIZE;
 
-        if (m_layoutColumn == rows - 1)
-            ++m_layoutRow;
-        ++m_layoutColumn;
-        m_layoutColumn %= rows;
+    if (m_layoutColumn == rows - 1)
+        ++m_layoutRow;
+    ++m_layoutColumn;
+    m_layoutColumn %= rows;
 
 }
 
@@ -437,8 +437,70 @@ void MainWindow::on_buscarL_clicked()
 void MainWindow::added(QString id, int total)
 {
     QJsonObject userTmp;
+    map<string, int> mapTmp;
+    int cont = TOTAL_RECOM;
+
+    remove_layout_recom();
+    // Se añade el dato al carrito
     if (m_shoppingCart.find(id) == m_shoppingCart.end())
         m_shoppingCart[id] = total;
+    // Si ya existe el dato entonces solo se aumenta la cantidad de productos
     else
         m_shoppingCart[id] += total;
+
+    // Si el objeto en el carrito se encuentra dentro del grafo de recomendaciones
+    // entonces obtenemos sus vecinos y luego guardamos máximo 5 de esos vecinos en
+    // una cola de prioridad que ordena los datos de mayor a menor (conforme a lo fuerte que sea
+    // la relación entre el dato comprado y el vecino).
+    if (m_graph.contains(id.toStdString())){
+        mapTmp = m_graph.getNeighbors(id.toStdString());
+        for (map<string, int>::iterator it = mapTmp.begin(); it != mapTmp.end() && cont; ++it){
+            // HashMap para evitar repeticiones en la cola de prioridad
+            if (m_recomAdded.find(it->first) == m_recomAdded.end()){
+                m_recomQueue.push(*it);
+                m_recomAdded[it->first] = true;
+            }
+            --cont;
+        }
+        update_recommendations();
+    }
+}
+
+void MainWindow::remove_layout_recom()
+{
+    m_recomAdded.clear();
+    for (size_t i = 0; i < m_recom.size(); ++i)
+        delete m_recom[i];
+    m_recom.clear();
+}
+
+void MainWindow::update_recommendations()
+{
+    Producto* prod;
+    QString name;
+    QString img;
+    double price;
+    int cont = TOTAL_RECOM;
+
+    // Se desencolan los datos y se crean los widgets
+    while(m_recomQueue.size() && cont){
+        img = QString::fromUtf8(m_recomQueue.top().first.c_str());
+        for (int i = 0; i < m_productDb.size(); ++i){
+            if (img == m_productDb[i].toObject()["id"].toString()){
+                prod = new Producto(this);
+                name = m_productDb[i].toObject()["name"].toString();
+                price = m_productDb[i].toObject()["price"].toDouble();
+
+                prod->changeName(name);
+                prod->changeImage(img);
+                prod->changePrice(price);
+                m_recom.push_back(prod);
+                m_layoutRecom->addWidget(prod, 0, TOTAL_RECOM - cont);
+            }
+        }
+        m_recomQueue.pop();
+        --cont;
+    }
+    ui->tmpRecomW->setLayout(m_layoutRecom);
+    prod = nullptr;
 }
