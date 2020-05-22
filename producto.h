@@ -15,7 +15,7 @@ class Producto : public QWidget
     Q_OBJECT
 
 public:
-    explicit Producto(QWidget *parent = nullptr);
+    explicit Producto(bool recomm = false, QWidget *parent = nullptr);
     ~Producto();
 
     void changeName(QString data);
@@ -24,22 +24,24 @@ public:
 
     double getPrice() const;
     QString getName();
+    QString getId() const;
 
     bool operator < (const Producto& other);
     bool operator > (const Producto& other);
 
 private slots:
     void on_addPB_clicked();
-
     void on_numberProductsSB_valueChanged(int arg1);
 
 signals:
-    void add_to_purchase(QString id, int total);
+    void add_to_purchase(QString id, int total, bool recomm);
 
 private:
     Ui::Producto *ui;
     QString m_id;
     double m_price;
+    bool m_recomm;
+
 };
 
 #endif // PRODUCTO_H

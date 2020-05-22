@@ -73,10 +73,10 @@ private slots:
     void showProducts(regex category, regex search = regex(".+"));
     void addToGrid(Producto* producto);
     void removeLayoutW();
-    void added(QString id, int total);
+    void added(QString id, int total, bool recomm);
 
     void remove_layout_recom();
-    void update_recommendations();
+    void update_recommendations(QString id, bool recomm);
 
 private:
     Ui::MainWindow *ui;
@@ -110,9 +110,14 @@ private:
 
     // Para obtener las recomendaciones
     priority_queue<PAIR, vector<PAIR>, cmp> m_recomQueue;
+    // map para saber si un elemento se puede recomendar
+    // y se se puede comprar desde las recomendaciones
+    // recomendar = false, comprado desde recomendaciones = true
     map<string, bool> m_recomAdded;
     QGridLayout *m_layoutRecom;
     vector<Producto*> m_recom;
+    queue<int> m_posTmp;
+    int m_recomSize;
 
     // Grafo que se utilizará a futuro para
     // las recomendaciones de productos

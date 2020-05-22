@@ -13,6 +13,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     m_layoutRow = 0;
     m_layoutColumn = 0;
+    m_recomSize = 0;
     m_layout = new QGridLayout(this);
     m_layoutRecom = new QGridLayout(this);
     m_fileMenu = ui->menubar->addMenu(tr("&File"));
@@ -298,7 +299,6 @@ void MainWindow::loadDB()
         }
     }
     m_graph.printData();
-
     m_dbFile.close();
 }
 
@@ -384,8 +384,10 @@ void MainWindow::addToGrid(Producto* producto)
 
 void MainWindow::removeLayoutW()
 {
-    for (size_t i = 0; i < m_products.size(); ++i)
+    for (size_t i = 0; i < m_products.size(); ++i){
+        m_layout->removeWidget(m_products[i]);
         delete m_products[i];
+    }
     m_layoutRow = 0;
     m_layoutColumn = 0;
     m_products.clear();
@@ -434,13 +436,12 @@ void MainWindow::on_buscarL_clicked()
     on_categoriaCB_currentIndexChanged(ui->categoriaCB->currentIndex(), regex(expression));
 }
 
-void MainWindow::added(QString id, int total)
+void MainWindow::added(QString id, int total, bool recomm)
 {
     QJsonObject userTmp;
     map<string, int> mapTmp;
     int cont = TOTAL_RECOM;
 
-    remove_layout_recom();
     // Se añade el dato al carrito
     if (m_shoppingCart.find(id) == m_shoppingCart.end())
         m_shoppingCart[id] = total;
@@ -458,48 +459,83 @@ void MainWindow::added(QString id, int total)
             // HashMap para evitar repeticiones en la cola de prioridad
             if (m_recomAdded.find(it->first) == m_recomAdded.end()){
                 m_recomQueue.push(*it);
-                m_recomAdded[it->first] = true;
+                // Se indica en el map que el producto se ha recomendado
+                // pero no se ha comprado
+                m_recomAdded[it->first] = false;
             }
             --cont;
         }
-        update_recommendations();
+        update_recommendations(id, recomm);
     }
 }
 
 void MainWindow::remove_layout_recom()
 {
-    m_recomAdded.clear();
-    for (size_t i = 0; i < m_recom.size(); ++i)
+    for (size_t i = 0; i < m_recom.size(); ++i){
+        m_layoutRecom->removeWidget(m_recom[i]);
         delete m_recom[i];
+    }
     m_recom.clear();
 }
 
-void MainWindow::update_recommendations()
+void MainWindow::update_recommendations(QString id, bool recomm)
 {
     Producto* prod;
     QString name;
     QString img;
+    size_t pos;
     double price;
-    int cont = TOTAL_RECOM;
 
-    // Se desencolan los datos y se crean los widgets
-    while(m_recomQueue.size() && cont){
-        img = QString::fromUtf8(m_recomQueue.top().first.c_str());
-        for (int i = 0; i < m_productDb.size(); ++i){
-            if (img == m_productDb[i].toObject()["id"].toString()){
-                prod = new Producto(this);
-                name = m_productDb[i].toObject()["name"].toString();
-                price = m_productDb[i].toObject()["price"].toDouble();
+    qDebug() << m_recomQueue.size() << endl;
+    if (m_recomSize == TOTAL_RECOM){
+        remove_layout_recom();
+        m_recomSize = 0;
+    }
 
-                prod->changeName(name);
-                prod->changeImage(img);
-                prod->changePrice(price);
-                m_recom.push_back(prod);
-                m_layoutRecom->addWidget(prod, 0, TOTAL_RECOM - cont);
-            }
+    if (recomm){
+        for (pos = 0; pos < m_recom.size(); ++pos)
+            if (id == m_recom[pos]->getId())
+                break;
+        if (pos < m_recom.size()){
+            m_layoutRecom->removeWidget(m_recom[pos]);
+            delete m_recom[pos];
+            m_recom.erase(m_recom.begin() + pos);
+            m_posTmp.push(int(pos));
+            --m_recomSize;
         }
-        m_recomQueue.pop();
-        --cont;
+    }
+    else{
+        // Se desencolan los datos y se crean los widgets
+        while(m_recomQueue.size() && m_recomSize < TOTAL_RECOM){
+            qDebug() << "recom size: " << m_recomSize << endl;
+            img = QString::fromUtf8(m_recomQueue.top().first.c_str());
+            for (int i = 0; i < m_productDb.size(); ++i){
+                if (img == m_productDb[i].toObject()["id"].toString()){
+                    prod = new Producto(true);
+                    name = m_productDb[i].toObject()["name"].toString();
+                    price = m_productDb[i].toObject()["price"].toDouble();
+                    prod->changeName(name);
+                    prod->changeImage(img);
+                    prod->changePrice(price);
+                    m_recom.push_back(prod);
+                    connect (m_recom.back(), &Producto::add_to_purchase, this, &MainWindow::added);
+                    if (m_posTmp.size()){
+                        m_layoutRecom->addWidget(prod, 0, m_posTmp.back());
+                        m_posTmp.pop();
+                    }
+                    else
+                        m_layoutRecom->addWidget(prod, 0, m_recomSize);
+                    break;
+                }
+            }
+            // Si es la primera vez que se compra el producto se aumenta el contador
+            // de las recomendaciones, esto para evitar que se haya cambios en las
+            // recomendaciones en caso de que se vuelva a comprar un elemento
+            if (m_recomAdded.find(id.toStdString()) == m_recomAdded.end())
+                m_recomAdded[id.toStdString()] = true;
+            ++m_recomSize;
+            m_recomQueue.pop();
+        }
     }
     ui->tmpRecomW->setLayout(m_layoutRecom);
     prod = nullptr;

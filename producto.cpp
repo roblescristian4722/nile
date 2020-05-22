@@ -1,9 +1,10 @@
 #include "producto.h"
 #include "ui_producto.h"
 
-Producto::Producto(QWidget *parent) :
+Producto::Producto(bool recomm, QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::Producto)
+    ui(new Ui::Producto),
+    m_recomm(recomm)
 {
     ui->setupUi(this);
     ui->addPB->setEnabled(false);
@@ -44,6 +45,9 @@ double Producto::getPrice() const
 QString Producto::getName()
 { return ui->nameL->text(); }
 
+QString Producto::getId() const
+{ return m_id; }
+
 bool Producto::operator < (const Producto &other)
 { return this->getPrice() < other.getPrice(); }
 
@@ -52,8 +56,9 @@ bool Producto::operator >(const Producto &other)
 
 void Producto::on_addPB_clicked()
 {
-    emit add_to_purchase(m_id, ui->numberProductsSB->text().toInt());
+    int prod = ui->numberProductsSB->text().toInt();
     ui->numberProductsSB->setValue(0);
+    emit add_to_purchase(m_id, prod, m_recomm);
 }
 
 void Producto::on_numberProductsSB_valueChanged(int arg1)
