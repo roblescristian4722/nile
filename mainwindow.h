@@ -20,6 +20,7 @@
 #include <regex>
 #include <map>
 #include <queue>
+#include <cstdlib>
 #include <QMainWindow>
 #include <QMessageBox>
 #include <QDebug>
@@ -77,6 +78,7 @@ private slots:
 
     void remove_layout_recom();
     void update_recommendations(QString id, bool recomm);
+    void random_elements();
 
 private:
     Ui::MainWindow *ui;

@@ -178,6 +178,7 @@ void MainWindow::on_loginPB_clicked()
     if (success){
         m_users.clear();
         on_categoriaCB_currentIndexChanged(CATEGORIA_TODOS);
+        random_elements();
     }
 }
 
@@ -194,44 +195,46 @@ void MainWindow::saveDB()
     map<QString, int>::iterator it;
     int sold = 0;
 
-    // Se itera por la base de datos del usuario hasta encontrar el usuario
-    // de la sesión actual
-    for (int i = 0; i < m_userDb.size(); ++i)
-        if (m_userDb[i].toObject()["email"].toString() == m_currentUser){
-            // Objeto usuario
-            jsonObj = m_userDb[i].toObject();
-            // Array purchase - Se guarda para no perder los datos
-            // previamente almacenados
-            purchaseArr = jsonObj["purchase"].toArray();
-            for (it = m_shoppingCart.begin(); it != m_shoppingCart.end(); it++){
-                aux["id"] = it->first;
-                timeDateArr.append(aux);
+    if (m_shoppingCart.size()){
+        // Se itera por la base de datos del usuario hasta encontrar el usuario
+        // de la sesión actual
+        for (int i = 0; i < m_userDb.size(); ++i)
+            if (m_userDb[i].toObject()["email"].toString() == m_currentUser){
+                // Objeto usuario
+                jsonObj = m_userDb[i].toObject();
+                // Array purchase - Se guarda para no perder los datos
+                // previamente almacenados
+                purchaseArr = jsonObj["purchase"].toArray();
+                for (it = m_shoppingCart.begin(); it != m_shoppingCart.end(); it++){
+                    aux["id"] = it->first;
+                    timeDateArr.append(aux);
+                }
+                // Se guarda el array timeDate dentro de un objeto que tiene
+                // la fecha y hora de la sesión como llave
+                timeDateObj[m_dateSession] = timeDateArr;
+                // Luego se almacena el objeto completo en el array de compras
+                purchaseArr.append(timeDateObj);
+                // Después se sustituyen los datos en purchase por la versión
+                // actualizada del array
+                jsonObj["purchase"] = purchaseArr;
+                // Y finalmente se cambia todo purchase del objeto usuario
+                m_userDb[i] = jsonObj;
             }
-            // Se guarda el array timeDate dentro de un objeto que tiene
-            // la fecha y hora de la sesión como llave
-            timeDateObj[m_dateSession] = timeDateArr;
-            // Luego se almacena el objeto completo en el array de compras
-            purchaseArr.append(timeDateObj);
-            // Después se sustituyen los datos en purchase por la versión
-            // actualizada del array
-            jsonObj["purchase"] = purchaseArr;
-            // Y finalmente se cambia todo purchase del objeto usuario
-            m_userDb[i] = jsonObj;
-        }
 
-    for (int i = 0; i < m_productDb.size(); ++i){
-        jsonObj = m_productDb[i].toObject();
-        // Se busca el producto de la base de datos en el carrito de compras
-        it = m_shoppingCart.find(jsonObj["id"].toString());
-        // Si el producto fue vendido esta sesión se cambia su valor
-        if (it != m_shoppingCart.end()){
-            sold = jsonObj["sold"].toInt();
-            sold += it->second;
-            jsonObj["sold"] = sold;
-            m_productDb[i] = jsonObj;
+        for (int i = 0; i < m_productDb.size(); ++i){
+            jsonObj = m_productDb[i].toObject();
+            // Se busca el producto de la base de datos en el carrito de compras
+            it = m_shoppingCart.find(jsonObj["id"].toString());
+            // Si el producto fue vendido esta sesión se cambia su valor
+            if (it != m_shoppingCart.end()){
+                sold = jsonObj["sold"].toInt();
+                sold += it->second;
+                jsonObj["sold"] = sold;
+                m_productDb[i] = jsonObj;
+            }
         }
-
     }
+
     jsonDocToObj["users"] = m_userDb;
     jsonDocToObj["products"] = m_productDb;
     jsonDoc = QJsonDocument(jsonDocToObj);
@@ -486,7 +489,6 @@ void MainWindow::update_recommendations(QString id, bool recomm)
     size_t pos;
     double price;
 
-    qDebug() << m_recomQueue.size() << endl;
     if (m_recomSize == TOTAL_RECOM){
         remove_layout_recom();
         m_recomSize = 0;
@@ -507,7 +509,6 @@ void MainWindow::update_recommendations(QString id, bool recomm)
     else{
         // Se desencolan los datos y se crean los widgets
         while(m_recomQueue.size() && m_recomSize < TOTAL_RECOM){
-            qDebug() << "recom size: " << m_recomSize << endl;
             img = QString::fromUtf8(m_recomQueue.top().first.c_str());
             for (int i = 0; i < m_productDb.size(); ++i){
                 if (img == m_productDb[i].toObject()["id"].toString()){
@@ -539,4 +540,25 @@ void MainWindow::update_recommendations(QString id, bool recomm)
     }
     ui->tmpRecomW->setLayout(m_layoutRecom);
     prod = nullptr;
+}
+
+void MainWindow::random_elements()
+{
+    int pos;
+    QJsonObject tmp;
+    map<int, bool> positions;
+    PAIR par;
+
+    srand(time(NULL));
+    for (int i = 0; i < TOTAL_RECOM; ++i){
+        do{
+            pos = rand() % m_productDb.size();
+        }while(positions.find(pos) != positions.end());
+        positions[pos] = true;
+        tmp = m_productDb[pos].toObject();
+        par.first = tmp["id"].toString().toStdString();
+        par.second = pos;
+        m_recomQueue.push(par);
+    }
+    update_recommendations("", false);
 }
